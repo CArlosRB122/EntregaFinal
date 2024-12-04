@@ -20,7 +20,7 @@ pipeline {
                 script {
                     // Asegúrate de tener docker-compose.yml correctamente configurado
                     // Inicia los contenedores en modo desatendido (-d)
-                    sh 'docker-compose up -d'
+                    sh 'docker-compose -f docker-compose.yml up -d'
                 }
             }
         }
@@ -48,7 +48,7 @@ pipeline {
             steps {
                 script {
                     // Detén los contenedores al final del pipeline
-                    sh 'docker-compose down'
+                    sh 'docker-compose -f docker-compose.yml down'
                 }
             }
         }
@@ -69,4 +69,3 @@ pipeline {
         }
     }
 }
-
