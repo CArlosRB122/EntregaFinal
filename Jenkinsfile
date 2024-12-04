@@ -2,70 +2,68 @@ pipeline {
     agent any
 
     environment {
-
-        GIT_EXECUTABLE = 'C:\\Program Files\\Git\\bin\\git.exe'
+        // Definir nombres para las imágenes Docker
+        DOCKER_IMAGE_1 = 'docker1_image'
+        DOCKER_IMAGE_2 = 'docker2_image'
     }
-
-
 
     stages {
-        stage('Checkout') {
+        stage('Clonar Repositorio') {
             steps {
                 script {
-                    // Realiza el checkout del repositorio
-                    git branch: 'master', url: 'https://github.com/CArlosRB122/EntregaFinal.git'
-                }
-            }
-        }
-        
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    // Construir la imagen Docker utilizando docker-compose
-                    echo 'Building Docker image using docker-compose...'
-                    sh 'docker-compose -f docker-compose.yml build'
+                    // Clonar el repositorio desde GitHub
+                    git 'https://github.com/CArlosRB122/EntregaFinal.git'
                 }
             }
         }
 
-        stage('Run Docker Containers') {
+        stage('Construir Docker Contenedor 1') {
             steps {
                 script {
-                    // Iniciar los contenedores Docker con docker-compose
-                    echo 'Starting Docker containers...'
-                    sh 'docker-compose -f docker-compose.yml up -d'
+                    // Construir la imagen Docker para el contenedor 1 desde el Dockerfile correspondiente
+                    sh '''
+                    docker build -t $DOCKER_IMAGE_1 -f ./docker1/Dockerfile ./docker1
+                    '''
                 }
             }
         }
 
-        stage('Test') {
+        stage('Construir Docker Contenedor 2') {
             steps {
                 script {
-                    // Ejecutar las pruebas dentro del contenedor (puedes adaptar esto según tus necesidades)
-                    echo 'Running tests inside Docker containers...'
-                    // Por ejemplo, ejecutar las pruebas en el contenedor
-                    sh 'docker exec <container_name> <test_command>'
+                    // Construir la imagen Docker para el contenedor 2 desde el Dockerfile correspondiente
+                    sh '''
+                    docker build -t $DOCKER_IMAGE_2 -f ./docker2/Dockerfile ./docker2
+                    '''
                 }
             }
         }
 
-        stage('Stop Docker Containers') {
+        stage('Iniciar Docker Contenedor 1') {
             steps {
                 script {
-                    // Detener los contenedores después de las pruebas
-                    echo 'Stopping Docker containers...'
-                    sh 'docker-compose -f docker-compose.yml down'
+                    // Iniciar el contenedor 1
+                    sh '''
+                    docker run -d --name docker1_container $DOCKER_IMAGE_1
+                    '''
                 }
             }
         }
-    }
 
-    post {
-        success {
-            echo 'Pipeline executed successfully!'
+        stage('Iniciar Docker Contenedor 2') {
+            steps {
+                script {
+                    // Iniciar el contenedor 2
+                    sh '''
+                    docker run -d --name docker2_container $DOCKER_IMAGE_2
+                    '''
+                }
+            }
         }
-        failure {
-            echo 'There was a failure in the pipeline.'
-        }
-    }
-}
+
+        stage('Pruebas en Docker 1') {
+            steps {
+                script {
+                    // Ejecutar las pruebas dentro del contenedor 1
+                    sh '''
+                    docker exec
