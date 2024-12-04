@@ -35,17 +35,6 @@ pipeline {
             }
         }
 
-        stage('Clean Up') {
-            steps {
-                script {
-                    // Detener y eliminar los contenedores si es necesario
-                    bat 'docker stop docker1-container'
-                    bat 'docker stop docker2-container'
-                    bat 'docker rm docker1-container'
-                    bat 'docker rm docker2-container'
-                }
-            }
-        }
     }
 
     post {
