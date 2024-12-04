@@ -1,12 +1,6 @@
 pipeline {
     agent any
 
-    tools {
-        // Aquí puedes definir herramientas necesarias, como Git o Docker
-        // git 'Git' // Solo si es necesario
-        dockerTool 'Docker' // Si estás usando Docker, puedes definirlo aquí
-    }
-
     environment {
         DOCKER_IMAGE_1 = 'docker1_image'
         DOCKER_IMAGE_2 = 'docker2_image'
@@ -56,3 +50,4 @@ pipeline {
         }
     }
 }
+
