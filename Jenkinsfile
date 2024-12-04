@@ -20,8 +20,8 @@ pipeline {
             steps {
                 script {
                     // Ejecutar los contenedores en segundo plano
-                    bat 'start /B docker run -d --name docker1-container docker1'
-                    bat 'start /B docker run -d --name docker2-container docker2'
+                    bat 'start /B docker run -d --name docker1 docker1'
+                    bat 'start /B docker run -d --name docker2 docker2'
                 }
             }
         }
@@ -36,16 +36,24 @@ pipeline {
         }
 
         stage('Clean Up') {
-            steps {
-                script {
-                    // Detener y eliminar los contenedores si es necesario
-                    bat 'docker stop docker1-container'
-                    bat 'docker stop docker2-container'
-                    bat 'docker rm docker1-container'
-                    bat 'docker rm docker2-container'
-                }
+    steps {
+        script {
+            // Verificar si los contenedores están en ejecución antes de intentar detenerlos
+            def container1Running = sh(script: 'docker ps -q -f name=docker1', returnStdout: true).trim()
+            def container2Running = sh(script: 'docker ps -q -f name=docker2', returnStdout: true).trim()
+
+            // Detener los contenedores si están en ejecución
+            if (container1Running) {
+                bat 'docker stop docker1'
+                bat 'docker rm docker1'
+            }
+            if (container2Running) {
+                bat 'docker stop docker2'
+                bat 'docker rm docker2'
             }
         }
+    }
+}
     }
 
     post {
