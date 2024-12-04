@@ -5,17 +5,19 @@
     "main": "index.js",
     "scripts": {
       "test": "jest",
-      "coverage-report": "jest --coverage",
+      "coverage-report": "jest --coverage", 
       "start": "node index.js",
       "build": "echo 'Construyendo proyecto...'",
-      "lint": "eslint ."
+      "lint": "eslint .",
+      "upload-coverage": "jest --coverage && codecov" 
     },
     "dependencies": {
       "@sentry/node": "^7.66.1"
     },
     "devDependencies": {
       "jest": "^29.7.0",
-      "eslint": "^8.52.0"
+      "eslint": "^8.52.0",
+      "codecov": "^3.8.3"
     },
     "jest": {
       "collectCoverage": true,
@@ -32,4 +34,3 @@
     "author": "Carlos Romero",
     "license": "MIT"
   }
-  
