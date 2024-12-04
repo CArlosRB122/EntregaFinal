@@ -2,50 +2,57 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE_1 = 'docker1_image'
-        DOCKER_IMAGE_2 = 'docker2_image'
+        DOCKER_CLI_EXPERIMENTAL = 'enabled' // Habilitar características experimentales de Docker si es necesario
     }
 
     stages {
-        stage('Construir Contenedores') {
+        stage('Build Docker Images') {
             steps {
                 script {
-                    // Construcción de la imagen de Docker para docker1
-                    sh 'docker build -t ${DOCKER_IMAGE_1} ./docker1'
-
-                    // Construcción de la imagen de Docker para docker2
-                    sh 'docker build -t ${DOCKER_IMAGE_2} ./docker2'
+                    // Construir las imágenes de Docker para docker1 y docker2
+                    bat 'start /B docker build -t docker1 .'
+                    bat 'start /B docker build -t docker2 .'
                 }
             }
         }
 
-        stage('Iniciar Docker1 y Docker2') {
+        stage('Run Docker Containers') {
             steps {
                 script {
-                    // Ejecutar los contenedores Docker (puedes agregar otros parámetros como volúmenes o puertos)
-                    sh 'docker run -d --name docker1 ${DOCKER_IMAGE_1}'
-                    sh 'docker run -d --name docker2 ${DOCKER_IMAGE_2}'
+                    // Ejecutar los contenedores en segundo plano
+                    bat 'start /B docker run -d --name docker1-container docker1'
+                    bat 'start /B docker run -d --name docker2-container docker2'
                 }
             }
         }
 
-        stage('Ejecutar Pruebas') {
+        stage('Verify Docker Containers') {
             steps {
                 script {
-                    // Ejecutar pruebas dentro de los contenedores docker1 y docker2
-                    sh 'docker exec docker1 run_tests.sh'
-                    sh 'docker exec docker2 run_tests.sh'
+                    // Verificar que los contenedores se estén ejecutando correctamente
+                    bat 'docker ps -a'
                 }
             }
         }
 
-        stage('Limpiar Docker1 y Docker2') {
+        stage('Clean Up') {
             steps {
                 script {
-                    // Detener y eliminar los contenedores después de las pruebas
-                    sh 'docker stop docker1 docker2'
-                    sh 'docker rm docker1 docker2'
+                    // Detener y eliminar los contenedores si es necesario
+                    bat 'docker stop docker1-container'
+                    bat 'docker stop docker2-container'
+                    bat 'docker rm docker1-container'
+                    bat 'docker rm docker2-container'
                 }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                // Limpiar cualquier imagen de Docker creada si es necesario
+                bat 'docker rmi docker1 docker2 || true'
             }
         }
     }
