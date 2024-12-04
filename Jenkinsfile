@@ -21,9 +21,7 @@ pipeline {
             steps {
                 script {
                     // Construir la imagen Docker para el contenedor 1 desde el Dockerfile correspondiente
-                    sh '''
-                    docker build -t $DOCKER_IMAGE_1 -f ./docker1/Dockerfile ./docker1
-                    '''
+                    sh 'docker build -t $DOCKER_IMAGE_1 -f ./docker1/Dockerfile ./docker1'
                 }
             }
         }
@@ -32,9 +30,7 @@ pipeline {
             steps {
                 script {
                     // Construir la imagen Docker para el contenedor 2 desde el Dockerfile correspondiente
-                    sh '''
-                    docker build -t $DOCKER_IMAGE_2 -f ./docker2/Dockerfile ./docker2
-                    '''
+                    sh 'docker build -t $DOCKER_IMAGE_2 -f ./docker2/Dockerfile ./docker2'
                 }
             }
         }
@@ -43,9 +39,7 @@ pipeline {
             steps {
                 script {
                     // Iniciar el contenedor 1
-                    sh '''
-                    docker run -d --name docker1_container $DOCKER_IMAGE_1
-                    '''
+                    sh 'docker run -d --name docker1_container $DOCKER_IMAGE_1'
                 }
             }
         }
@@ -54,9 +48,7 @@ pipeline {
             steps {
                 script {
                     // Iniciar el contenedor 2
-                    sh '''
-                    docker run -d --name docker2_container $DOCKER_IMAGE_2
-                    '''
+                    sh 'docker run -d --name docker2_container $DOCKER_IMAGE_2'
                 }
             }
         }
@@ -65,5 +57,45 @@ pipeline {
             steps {
                 script {
                     // Ejecutar las pruebas dentro del contenedor 1
-                    sh '''
-                    docker exec
+                    sh 'docker exec docker1_container ./run_tests.sh'
+                }
+            }
+        }
+
+        stage('Pruebas en Docker 2') {
+            steps {
+                script {
+                    // Ejecutar las pruebas dentro del contenedor 2
+                    sh 'docker exec docker2_container ./run_tests.sh'
+                }
+            }
+        }
+
+        stage('Detener Docker Contenedores') {
+            steps {
+                script {
+                    // Detener y eliminar los contenedores
+                    sh 'docker stop docker1_container docker2_container'
+                    sh 'docker rm docker1_container docker2_container'
+                }
+            }
+        }
+
+        stage('Limpiar Docker Imágenes') {
+            steps {
+                script {
+                    // Limpiar las imágenes Docker
+                    sh 'docker rmi $DOCKER_IMAGE_1 $DOCKER_IMAGE_2'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Asegurarse de detener los contenedores si la construcción falla
+            sh 'docker stop docker1_container docker2_container || true'
+            sh 'docker rm docker1_container docker2_container || true'
+        }
+    }
+}
