@@ -1,15 +1,35 @@
 {
     "name": "trabajo-final",
     "version": "1.0.0",
-    "description": "Proyecto de ejemplo con Node.js usando Docker",
-    "main": "app.js",
+    "description": "Proyecto para integrar Codecov y Sentry",
+    "main": "index.js",
     "scripts": {
-        "start": "node app.js"
+      "test": "jest",
+      "coverage-report": "jest --coverage",
+      "start": "node index.js",
+      "build": "echo 'Construyendo proyecto...'",
+      "lint": "eslint ."
     },
     "dependencies": {
-        "express": "^4.21.1"
+      "@sentry/node": "^7.66.1"
+    },
+    "devDependencies": {
+      "jest": "^29.7.0",
+      "eslint": "^8.52.0"
+    },
+    "jest": {
+      "collectCoverage": true,
+      "coverageDirectory": "coverage",
+      "coverageThreshold": {
+        "global": {
+          "branches": 70,
+          "functions": 70,
+          "lines": 70,
+          "statements": 70
+        }
+      }
     },
     "author": "Carlos Romero",
-    "license": "MIT",
-    "keywords": []
-}
+    "license": "MIT"
+  }
+  
