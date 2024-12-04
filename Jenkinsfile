@@ -1,120 +1,58 @@
 pipeline {
     agent any
 
+    tools {
+        // Aquí puedes definir herramientas necesarias, como Git o Docker
+        // git 'Git' // Solo si es necesario
+        dockerTool 'Docker' // Si estás usando Docker, puedes definirlo aquí
+    }
+
     environment {
-        // Definir nombres para las imágenes Docker
         DOCKER_IMAGE_1 = 'docker1_image'
         DOCKER_IMAGE_2 = 'docker2_image'
     }
 
     stages {
-        stage('Clonar Repositorio') {
+        stage('Construir Contenedores') {
             steps {
                 script {
-                    // Clonar el repositorio desde GitHub
-                    git 'https://github.com/CArlosRB122/EntregaFinal.git'
+                    // Construcción de la imagen de Docker para docker1
+                    sh 'docker build -t ${DOCKER_IMAGE_1} ./docker1'
+
+                    // Construcción de la imagen de Docker para docker2
+                    sh 'docker build -t ${DOCKER_IMAGE_2} ./docker2'
                 }
             }
         }
 
-        stage('Construir Docker Contenedor 1') {
+        stage('Iniciar Docker1 y Docker2') {
             steps {
                 script {
-                    // Construir la imagen Docker para el contenedor 1 desde el Dockerfile correspondiente
-                    sh '''
-                    docker build -t $DOCKER_IMAGE_1 -f ./docker1/Dockerfile ./docker1
-                    '''
+                    // Ejecutar los contenedores Docker (puedes agregar otros parámetros como volúmenes o puertos)
+                    sh 'docker run -d --name docker1 ${DOCKER_IMAGE_1}'
+                    sh 'docker run -d --name docker2 ${DOCKER_IMAGE_2}'
                 }
             }
         }
 
-        stage('Construir Docker Contenedor 2') {
+        stage('Ejecutar Pruebas') {
             steps {
                 script {
-                    // Construir la imagen Docker para el contenedor 2 desde el Dockerfile correspondiente
-                    sh '''
-                    docker build -t $DOCKER_IMAGE_2 -f ./docker2/Dockerfile ./docker2
-                    '''
+                    // Ejecutar pruebas dentro de los contenedores docker1 y docker2
+                    sh 'docker exec docker1 run_tests.sh'
+                    sh 'docker exec docker2 run_tests.sh'
                 }
             }
         }
 
-        stage('Iniciar Docker Contenedor 1') {
+        stage('Limpiar Docker1 y Docker2') {
             steps {
                 script {
-                    // Iniciar el contenedor 1
-                    sh '''
-                    docker run -d --name docker1_container $DOCKER_IMAGE_1
-                    '''
+                    // Detener y eliminar los contenedores después de las pruebas
+                    sh 'docker stop docker1 docker2'
+                    sh 'docker rm docker1 docker2'
                 }
             }
-        }
-
-        stage('Iniciar Docker Contenedor 2') {
-            steps {
-                script {
-                    // Iniciar el contenedor 2
-                    sh '''
-                    docker run -d --name docker2_container $DOCKER_IMAGE_2
-                    '''
-                }
-            }
-        }
-
-        stage('Pruebas en Docker 1') {
-            steps {
-                script {
-                    // Ejecutar las pruebas dentro del contenedor 1
-                    sh '''
-                    docker exec docker1_container ./run_tests.sh
-                    '''
-                }
-            }
-        }
-
-        stage('Pruebas en Docker 2') {
-            steps {
-                script {
-                    // Ejecutar las pruebas dentro del contenedor 2
-                    sh '''
-                    docker exec docker2_container ./run_tests.sh
-                    '''
-                }
-            }
-        }
-
-        stage('Detener Docker Contenedores') {
-            steps {
-                script {
-                    // Detener y eliminar los contenedores
-                    sh '''
-                    docker stop docker1_container docker2_container
-                    docker rm docker1_container docker2_container
-                    '''
-                }
-            }
-        }
-
-        stage('Limpiar Docker Imágenes') {
-            steps {
-                script {
-                    // Limpiar las imágenes Docker
-                    sh '''
-                    docker rmi $DOCKER_IMAGE_1 $DOCKER_IMAGE_2
-                    '''
-                }
-            }
-        }
-    }
-
-    post {
-        always {
-            // Asegurarse de detener los contenedores si la construcción falla
-            sh '''
-            docker stop docker1_container docker2_container || true
-            docker rm docker1_container docker2_container || true
-            '''
         }
     }
 }
-
