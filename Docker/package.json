@@ -20,6 +20,9 @@
       "codecov": "^3.8.3"
     },
     "jest": {
+        "transform": {
+    "^.+\\.[tj]sx?$": "babel-jest"
+  },
       "collectCoverage": true,
       "coverageDirectory": "coverage",
       "coverageThreshold": {
