@@ -1,63 +1,58 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_CLI_EXPERIMENTAL = 'enabled' // Habilitar características experimentales de Docker si es necesario
+    }
+
     stages {
-        stage('Detener contenedores existentes') {
+        stage('Build Docker Images') {
             steps {
                 script {
-                    // Detener los contenedores si están corriendo
-                    sh 'docker stop docker1 docker2 || exit /b 0'
-                    // Eliminar los contenedores detenidos
-                    sh 'docker rm docker1 docker2 || exit /b 0'
-                }
-            }
-        }
-        
-        stage('Construir contenedores Docker') {
-            steps {
-                script {
-                    // Construir los contenedores docker1 y docker2
-                    sh 'docker build -t docker1 ./docker1'
-                    sh 'docker build -t docker2 ./docker2'
+                    // Construir las imágenes de Docker para docker1 y docker2
+                    bat 'start /B docker build -t docker1 .'
+                    bat 'start /B docker build -t docker2 .'
                 }
             }
         }
 
-        stage('Iniciar contenedores') {
+        stage('Run Docker Containers') {
             steps {
                 script {
-                    // Iniciar los contenedores docker1 y docker2
-                    sh 'docker run -d --name docker1 docker1'
-                    sh 'docker run -d --name docker2 docker2'
+                    // Ejecutar los contenedores en segundo plano
+                    bat 'start /B docker run -d --name docker1-container docker1'
+                    bat 'start /B docker run -d --name docker2-container docker2'
                 }
             }
         }
 
-        stage('Verificar contenedores en ejecución') {
+        stage('Verify Docker Containers') {
             steps {
                 script {
-                    // Verificar que los contenedores están en ejecución
-                    sh 'docker ps'
+                    // Verificar que los contenedores se estén ejecutando correctamente
+                    bat 'docker ps -a'
                 }
             }
         }
 
-        stage('Ejecutar pruebas') {
+        stage('Clean Up') {
             steps {
                 script {
-                    // Aquí puedes incluir cualquier comando para ejecutar pruebas en los contenedores
-                    echo 'Ejecutando pruebas...'
+                    // Detener y eliminar los contenedores si es necesario
+                    bat 'docker stop docker1-container'
+                    bat 'docker stop docker2-container'
+                    bat 'docker rm docker1-container'
+                    bat 'docker rm docker2-container'
                 }
             }
         }
+    }
 
-        stage('Limpiar contenedores') {
-            steps {
-                script {
-                    // Detener y eliminar contenedores después de la ejecución
-                    sh 'docker stop docker1 docker2 || exit /b 0'
-                    sh 'docker rm docker1 docker2 || exit /b 0'
-                }
+    post {
+        always {
+            script {
+                // Limpiar cualquier imagen de Docker creada si es necesario
+                bat 'docker rmi docker1 docker2 || true'
             }
         }
     }
