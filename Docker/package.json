@@ -1,0 +1,15 @@
+{
+    "name": "trabajo-final",
+    "version": "1.0.0",
+    "description": "Proyecto de ejemplo con Node.js usando Docker",
+    "main": "app.js",
+    "scripts": {
+        "start": "node app.js"
+    },
+    "dependencies": {
+        "express": "^4.21.1"
+    },
+    "author": "Carlos Romero",
+    "license": "MIT",
+    "keywords": []
+}

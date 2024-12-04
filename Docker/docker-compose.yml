@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  docker1:
+    image: node:16
+    container_name: docker1
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "3001:3000"  # Expone el puerto 3000 dentro del contenedor al puerto 3001 en tu máquina
+    command: npm start
+    networks:
+      - app-network
+
+  docker2:
+    image: node:16
+    container_name: docker2
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "3002:3000"  # Expone el puerto 3000 dentro del contenedor al puerto 3002 en tu máquina
+    command: npm start
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
