@@ -1,57 +1,71 @@
 pipeline {
     agent any
 
-    tools {
-                git 'git.exe'
+    environment {
+
+        GIT_EXECUTABLE = 'C:\\Program Files\\Git\\bin\\git.exe'
     }
 
-    environment {
-        DOCKER_COMPOSE = 'docker-compose'      }
+
 
     stages {
         stage('Checkout') {
             steps {
-                               git 'https://github.com/CArlosRB122/EntregaFinal.git'
+                script {
+                    // Realiza el checkout del repositorio
+                    git branch: 'master', url: 'https://github.com/CArlosRB122/EntregaFinal.git'
+                }
             }
         }
-
-        stage('Build Docker Containers') {
+        
+        stage('Build Docker Image') {
             steps {
                 script {
-                                        bat 'docker-compose -f docker-compose.yml up -d'  
+                    // Construir la imagen Docker utilizando docker-compose
+                    echo 'Building Docker image using docker-compose...'
+                    sh 'docker-compose -f docker-compose.yml build'
                 }
             }
         }
 
-        stage('Test Application') {
+        stage('Run Docker Containers') {
             steps {
                 script {
-                                       bat 'docker exec docker1 npm test'                 }
+                    // Iniciar los contenedores Docker con docker-compose
+                    echo 'Starting Docker containers...'
+                    sh 'docker-compose -f docker-compose.yml up -d'
+                }
             }
         }
 
-        stage('Test Database Connection') {
+        stage('Test') {
             steps {
                 script {
-                                        bat 'docker exec docker2 npm test'                  }
+                    // Ejecutar las pruebas dentro del contenedor (puedes adaptar esto según tus necesidades)
+                    echo 'Running tests inside Docker containers...'
+                    // Por ejemplo, ejecutar las pruebas en el contenedor
+                    sh 'docker exec <container_name> <test_command>'
+                }
             }
         }
 
-        stage('Shutdown Containers') {
+        stage('Stop Docker Containers') {
             steps {
                 script {
-                                        bat 'docker-compose down'
+                    // Detener los contenedores después de las pruebas
+                    echo 'Stopping Docker containers...'
+                    sh 'docker-compose -f docker-compose.yml down'
                 }
             }
         }
     }
 
     post {
-        always {
-                       script {
-                bat 'docker-compose down'
-            }
+        success {
+            echo 'Pipeline executed successfully!'
+        }
+        failure {
+            echo 'There was a failure in the pipeline.'
         }
     }
 }
-
